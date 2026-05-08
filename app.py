@@ -9,16 +9,27 @@ if os.path.exists(".env"):
 
 app = Flask(__name__)
 
-# 2. Securely fetch and clean credentials
-# Using .strip() handles hidden spaces that cause "Invalid URL" errors
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
+# --- SECURE INITIALIZATION ---
+def get_clean_env(key):
+    val = os.environ.get(key, "")
+    # Remove markdown links, brackets, quotes, and whitespace
+    if not val: return ""
+    clean_val = val.split('](')[0].replace('[', '').replace(']', '').replace('(', '').replace(')', '').strip()
+    return clean_val
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("Missing SUPABASE_URL or SUPABASE_KEY in environment variables!")
+url = get_clean_env("SUPABASE_URL")
+key = get_clean_env("SUPABASE_KEY")
 
-# 3. Initialize Supabase Client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Extra safety check: if the URL still has 'rest/v1' at the end, remove it
+if url.endswith('/'):
+    url = url[:-1]
+if "/rest/v1" in url:
+    url = url.split("/rest/v1")[0]
+
+if not url or not key:
+    raise ValueError(f"Missing Credentials! URL: '{url}'")
+
+supabase: Client = create_client(url, key)
 
 # --- NORTH AGENCY ROUTES ---
 @app.route("/north")
