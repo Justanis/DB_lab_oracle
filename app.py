@@ -1,34 +1,34 @@
 import os
-from dj_database_url import key
-from django import urls
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# Only load dotenv if we are running locally
+# 1. Load environment variables locally
 if os.path.exists(".env"):
     load_dotenv()
 
 app = Flask(__name__)
 
-# Use .strip() to remove any accidental hidden spaces or newlines
-url = os.getenv("SUPABASE_URL", "").strip()
-key = os.getenv("SUPABASE_KEY", "").strip()
+# 2. Securely fetch and clean credentials
+# Using .strip() handles hidden spaces that cause "Invalid URL" errors
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
 
-if not url or not key:
-    raise ValueError("Credentials missing! Check Railway Variables.")
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("Missing SUPABASE_URL or SUPABASE_KEY in environment variables!")
 
-supabase: Client = create_client(url, key)
+# 3. Initialize Supabase Client
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# North agency routes
+# --- NORTH AGENCY ROUTES ---
 @app.route("/north")
 def north():
-    trips     = supabase.table("trips_north").select("*").execute().data or []
-    bookings  = supabase.table("bookings_north").select("*").execute().data or []
-    tourists  = supabase.table("tourist_basic").select("*").execute().data or []
-    events    = supabase.table("cultural_events").select("*").eq("region", "North").execute().data
-    return render_template("north.html",
-                           trips=trips, bookings=bookings,
+    trips    = supabase.table("trips_north").select("*").execute().data or []
+    bookings = supabase.table("bookings_north").select("*").execute().data or []
+    tourists = supabase.table("tourist_basic").select("*").execute().data or []
+    events   = supabase.table("cultural_events").select("*").eq("region", "North").execute().data or []
+    return render_template("north.html", 
+                           trips=trips, bookings=bookings, 
                            tourists=tourists, events=events)
 
 @app.route("/north/add-trip", methods=["POST"])
@@ -58,15 +58,15 @@ def north_add_booking():
     supabase.table("booking_amount").insert(amount).execute()
     return redirect(url_for("north"))
 
-# East agency routes
+# --- EAST AGENCY ROUTES ---
 @app.route("/east")
 def east():
-    trips     = supabase.table("trips_east").select("*").execute().data or []
-    bookings  = supabase.table("bookings_east").select("*").execute().data or []
-    tourists  = supabase.table("tourist_basic").select("*").execute().data or []
-    events    = supabase.table("cultural_events").select("*").eq("region", "East").execute().data
-    return render_template("east.html",
-                           trips=trips, bookings=bookings,
+    trips    = supabase.table("trips_east").select("*").execute().data or []
+    bookings = supabase.table("bookings_east").select("*").execute().data or []
+    tourists = supabase.table("tourist_basic").select("*").execute().data or []
+    events   = supabase.table("cultural_events").select("*").eq("region", "East").execute().data or []
+    return render_template("east.html", 
+                           trips=trips, bookings=bookings, 
                            tourists=tourists, events=events)
 
 @app.route("/east/add-trip", methods=["POST"])
@@ -96,30 +96,33 @@ def east_add_booking():
     supabase.table("booking_amount").insert(amount).execute()
     return redirect(url_for("east"))
 
-# Global view
+# --- GLOBAL VIEW ---
 @app.route("/")
 @app.route("/global")
 def global_view():
-    north_trips = supabase.table("trips_north").select("*").execute().data or []
-    east_trips  = supabase.table("trips_east").select("*").execute().data or []
-    all_trips   = north_trips + east_trips
+    # Fetch all data with safety fallbacks to empty lists
+    n_trips = supabase.table("trips_north").select("*").execute().data or []
+    e_trips = supabase.table("trips_east").select("*").execute().data or []
+    all_trips = n_trips + e_trips
 
-    north_bookings = supabase.table("bookings_north").select("*").execute().data or []
-    east_bookings  = supabase.table("bookings_east").select("*").execute().data or []
-    all_bookings   = north_bookings + east_bookings
+    n_bookings = supabase.table("bookings_north").select("*").execute().data or []
+    e_bookings = supabase.table("bookings_east").select("*").execute().data or []
+    all_bookings = n_bookings + e_bookings
 
     all_amounts = supabase.table("booking_amount").select("*").execute().data or []
     tourists    = supabase.table("tourist_basic").select("*").execute().data or []
     contacts    = supabase.table("tourist_contact").select("*").execute().data or []
     events      = supabase.table("cultural_events").select("*").execute().data or []
 
+    # Map contacts and amounts for easy lookup
     contact_map = {c["touristid"]: c for c in contacts}
+    amount_map = {a["bookingid"]: a["amount"] for a in all_amounts}
+
     full_tourists = []
     for t in tourists:
         merged = {**t, **contact_map.get(t["touristid"], {})}
         full_tourists.append(merged)
 
-    amount_map = {a["bookingid"]: a["amount"] for a in all_amounts}
     for b in all_bookings:
         b["amount"] = amount_map.get(b["bookingid"], "N/A")
 
@@ -128,16 +131,17 @@ def global_view():
                            all_bookings=all_bookings,
                            full_tourists=full_tourists,
                            events=events,
-                           north_count=len(north_trips),
-                           east_count=len(east_trips))
+                           north_count=len(n_trips),
+                           east_count=len(e_trips))
 
 @app.route("/api/all-trips")
 def api_all_trips():
-    north = supabase.table("trips_north").select("*").execute().data or []
-    east  = supabase.table("trips_east").select("*").execute().data or []
-    return jsonify({"north": north, "east": east, "total": north + east})
-
+    n = supabase.table("trips_north").select("*").execute().data or []
+    e = supabase.table("trips_east").select("*").execute().data or []
+    return jsonify({"north": n, "east": e, "total": n + e})
 
 if __name__ == "__main__":
+    # Railway assigns a port via environment variable
     port = int(os.environ.get("PORT", 5000))
+    # In production, debug should usually be False, but keep it True for now to see errors
     app.run(host="0.0.0.0", port=port, debug=True)
