@@ -1,0 +1,2 @@
+[deploy]
+startCommand = "python -u app.py"
