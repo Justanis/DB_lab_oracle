@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
-print("URL:", os.getenv("SUPABASE_URL"))
-print("KEY:", os.getenv("SUPABASE_KEY"))
 
 app = Flask(__name__)
 
@@ -139,4 +137,4 @@ def api_all_trips():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
