@@ -1,13 +1,11 @@
+import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from supabase import create_client, Client
 from dotenv import load_dotenv
+
 load_dotenv()
 
-import os
-
 app = Flask(__name__)
-
-
 
 supabase: Client = create_client(
     os.getenv("SUPABASE_URL"),
@@ -48,7 +46,6 @@ def north_add_booking():
         "bookingid": request.form.get("bookingid"),
         "amount":    request.form.get("amount"),
     }
-    # Mixed fragmentation: info and amount stored in separate tables
     supabase.table("bookings_north").insert(info).execute()
     supabase.table("booking_amount").insert(amount).execute()
     return redirect(url_for("north"))
@@ -97,25 +94,23 @@ def east_add_booking():
 def global_view():
     north_trips = supabase.table("trips_north").select("*").execute().data
     east_trips  = supabase.table("trips_east").select("*").execute().data
-    all_trips   = north_trips + east_trips   # ← simulates UNION
+    all_trips   = north_trips + east_trips
 
     north_bookings = supabase.table("bookings_north").select("*").execute().data
     east_bookings  = supabase.table("bookings_east").select("*").execute().data
     all_bookings   = north_bookings + east_bookings
 
-    all_amounts    = supabase.table("booking_amount").select("*").execute().data
-    tourists       = supabase.table("tourist_basic").select("*").execute().data
-    contacts       = supabase.table("tourist_contact").select("*").execute().data
-    events         = supabase.table("cultural_events").select("*").execute().data
+    all_amounts = supabase.table("booking_amount").select("*").execute().data
+    tourists    = supabase.table("tourist_basic").select("*").execute().data
+    contacts    = supabase.table("tourist_contact").select("*").execute().data
+    events      = supabase.table("cultural_events").select("*").execute().data
 
-    # Reconstruct full tourist info (vertical fragmentation join)
     contact_map = {c["touristid"]: c for c in contacts}
     full_tourists = []
     for t in tourists:
         merged = {**t, **contact_map.get(t["touristid"], {})}
         full_tourists.append(merged)
 
-    # Enrich bookings with amount (mixed fragmentation join)
     amount_map = {a["bookingid"]: a["amount"] for a in all_amounts}
     for b in all_bookings:
         b["amount"] = amount_map.get(b["bookingid"], "N/A")
