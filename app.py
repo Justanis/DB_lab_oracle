@@ -12,13 +12,14 @@ app = Flask(__name__)
 
 # 2. Cleaning Function
 def clean_input(val):
-    if not val or not isinstance(val, str): return ""
-    # Find the first substring that looks like a URL (handles markdown [text](url))
-    match = re.search(r'https?://[^\s\)\]\"\'\>]+', val)
-    if match:
-        val = match.group(0)
-    # Strip common markdown/copy-paste artifacts like brackets or quotes
-    val = val.strip().strip("[]()\"' ")
+    if not val: return ""
+    val = str(val).strip()
+    # Robustly find the URL if hidden inside Markdown [text](url) or labels
+    url_match = re.search(r'https?://[^\s\)\]\"\'\>]+', val)
+    if url_match:
+        val = url_match.group(0)
+    # Strip common artifacts like brackets, quotes, and trailing slashes
+    val = val.strip("[]()\"' ").rstrip("/")
     # Remove API path suffixes if the URL was copied from the wrong settings page
     val = re.sub(r'/rest/v1/?$', '', val)
     return val
@@ -82,8 +83,11 @@ def north_add_trip():
     for k, v in raw_data.items():
         if v:
             # Ensure tripid is an integer if provided
-            if k == "tripid":
+            if k == "tripid" and str(v).isdigit():
                 v = int(v)
+            elif k == "tripid":
+                # Skip invalid non-numeric tripid to let SERIAL handle it
+                continue
             data[k] = v
     supabase.table("trips_north").insert(data).execute()
     return redirect(url_for("north"))
@@ -110,8 +114,11 @@ def east_add_trip():
     for k, v in raw_data.items():
         if v:
             # Ensure tripid is an integer if provided
-            if k == "tripid":
+            if k == "tripid" and str(v).isdigit():
                 v = int(v)
+            elif k == "tripid":
+                # Skip invalid non-numeric tripid to let SERIAL handle it
+                continue
             data[k] = v
     supabase.table("trips_east").insert(data).execute()
     return redirect(url_for("east"))
