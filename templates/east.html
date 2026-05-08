@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>East Agency — الشرق</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rock:    #3b2a1a;
+    --terra:   #c0622a;
+    --clay:    #e8855a;
+    --warm:    #fdf3ec;
+    --stone:   #8a7264;
+    --amber:   #e8a83a;
+    --text:    #251810;
+    --muted:   #8a7264;
+    --white:   #ffffff;
+    --radius:  12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--warm);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--rock);
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 300px; height: 100%;
+    background: linear-gradient(135deg, transparent 50%, rgba(192,98,42,0.2) 100%);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 32px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .brand { display: flex; flex-direction: column; }
+  .brand-tag {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .brand h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .brand h1 span { color: var(--clay); }
+  .brand p { font-size: 0.85rem; opacity: 0.65; margin-top: 6px; }
+  .nav-links { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+  .nav-links a {
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active {
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+  .nav-links a.global {
+    background: var(--amber);
+    color: var(--rock);
+    border-color: var(--amber);
+    font-weight: 600;
+  }
+  .wave {
+    height: 48px;
+    background: var(--rock);
+    position: relative;
+  }
+  .wave::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: -5%; right: -5%;
+    height: 48px;
+    background: var(--warm);
+    border-radius: 50% 50% 0 0;
+  }
+
+  /* ── FRAGMENTATION BANNER ── */
+  .frag-banner {
+    max-width: 1100px;
+    margin: 16px auto 32px;
+    padding: 0 32px;
+  }
+  .frag-info {
+    background: white;
+    border-left: 4px solid var(--terra);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    box-shadow: 0 2px 12px rgba(59,42,26,0.08);
+    flex-wrap: wrap;
+  }
+  .frag-info .label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--terra);
+    font-weight: 500;
+  }
+  .frag-badge {
+    background: var(--warm);
+    border: 1px solid #e8c4a0;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--rock);
+    font-family: 'Courier New', monospace;
+  }
+  .frag-badge.highlight { background: var(--terra); color: white; border-color: var(--terra); }
+
+  /* ── LAYOUT ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 0 32px 60px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+
+  /* ── STAT CARDS ── */
+  .stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: 0 2px 12px rgba(59,42,26,0.07);
+    border-top: 3px solid var(--terra);
+  }
+  .stat-card .num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--terra);
+    line-height: 1;
+  }
+  .stat-card .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── PANELS ── */
+  .panel {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(59,42,26,0.07);
+    overflow: hidden;
+  }
+  .panel-header {
+    background: var(--rock);
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .panel-header .sub { font-size: 11px; opacity: 0.6; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+  .panel-body { padding: 20px 24px; }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--warm);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid #f5ede4; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--warm); }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-east { background: #fde8d8; color: var(--terra); }
+  .badge-event { background: #fef3d4; color: #7a5100; }
+  .empty { text-align: center; padding: 40px; color: var(--muted); font-style: italic; }
+
+  /* ── FORM ── */
+  .form-section { margin-bottom: 20px; }
+  .form-toggle {
+    background: none;
+    border: 1px dashed var(--terra);
+    color: var(--terra);
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Source Sans 3', sans-serif;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+  }
+  .form-toggle:hover { background: #fde8d8; }
+  .add-form {
+    background: var(--warm);
+    border: 1px solid #e8c4a0;
+    border-radius: var(--radius);
+    padding: 20px;
+    display: none;
+  }
+  .add-form.open { display: block; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .form-group input {
+    padding: 9px 13px;
+    border: 1px solid #e8c4a0;
+    border-radius: 6px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.88rem;
+    background: white;
+    color: var(--text);
+    transition: border 0.2s;
+  }
+  .form-group input:focus { outline: none; border-color: var(--terra); }
+  .btn-submit {
+    margin-top: 14px;
+    background: var(--rock);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.88rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  .btn-submit:hover { background: var(--terra); }
+
+  /* ── FRAGMENTATION MAP ── */
+  .frag-map {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(59,42,26,0.07);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .frag-map h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    color: var(--rock);
+    margin-bottom: 16px;
+  }
+  .frag-diagram {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 8px;
+  }
+  .frag-node {
+    background: var(--warm);
+    border: 1.5px solid #e8c4a0;
+    border-radius: 6px;
+    padding: 8px 14px;
+    text-align: center;
+  }
+  .frag-node.origin { border-color: var(--amber); background: #fffbf0; }
+  .frag-node.active { border-color: var(--terra); background: var(--terra); color: white; }
+  .frag-node.inactive { opacity: 0.45; }
+  .frag-node small { display: block; font-size: 10px; opacity: 0.65; margin-top: 2px; }
+  .frag-arrow { color: var(--muted); font-size: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-tag">Regional Branch — Horizontal Fragment</span>
+      <h1>East <span>Agency</span></h1>
+      <p>Batna · Setif · Khenchela &nbsp;|&nbsp; وكالة الشرق</p>
+    </div>
+    <nav class="nav-links">
+      <a href="/north">🏛 North</a>
+      <a href="/east" class="active">🏔 East</a>
+      <a href="/global" class="global">🌍 Global View</a>
+    </nav>
+  </div>
+</header>
+<div class="wave"></div>
+
+<div class="frag-banner">
+  <div class="frag-info">
+    <span class="label">Fragmentation active</span>
+    <span class="frag-badge highlight">trips_east</span>
+    <span class="frag-badge">bookings_east</span>
+    <span class="frag-badge">tourist_basic (shared)</span>
+    <span class="frag-badge">tourist_contact (shared)</span>
+    <span class="frag-badge">booking_amount (shared)</span>
+    <span style="font-size:12px; color:var(--muted); margin-left:auto;">
+      This site only sees <strong>East</strong> data — North data is invisible here
+    </span>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- Stats -->
+  <div class="grid-3">
+    <div class="stat-card">
+      <div class="num">{{ trips|length }}</div>
+      <div class="stat-label">East Trips (trips_east)</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">{{ bookings|length }}</div>
+      <div class="stat-label">Bookings (bookings_east)</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">{{ events|length }}</div>
+      <div class="stat-label">East Events</div>
+    </div>
+  </div>
+
+  <!-- Fragmentation diagram -->
+  <div class="frag-map">
+    <h2>📐 Fragmentation Map — What this site stores</h2>
+    <div class="frag-diagram">
+      <div class="frag-node origin">Trips<small>original table</small></div>
+      <span class="frag-arrow">→ WHERE Region='East' →</span>
+      <div class="frag-node inactive">trips_north<small>North DB</small></div>
+      <span class="frag-arrow">+</span>
+      <div class="frag-node active">trips_east<small>this DB</small></div>
+    </div>
+    <div class="frag-diagram">
+      <div class="frag-node origin">Bookings<small>original table</small></div>
+      <span class="frag-arrow">→ mixed fragmentation →</span>
+      <div class="frag-node active">bookings_east<small>BookingID, TouristID, TripID</small></div>
+      <span class="frag-arrow">+</span>
+      <div class="frag-node active">booking_amount<small>Amount (financial)</small></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <!-- Trips -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>🏔 East Trips</h2>
+          <div class="sub">Table: trips_east — horizontal fragment</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="form-section">
+          <button class="form-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+            + Add East Trip
+          </button>
+          <form class="add-form" method="POST" action="/east/add-trip">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Trip ID</label>
+                <input type="number" name="tripid" placeholder="e.g. 204" required>
+              </div>
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" placeholder="e.g. Timgad Night Walk" required>
+              </div>
+              <div class="form-group">
+                <label>Start Date</label>
+                <input type="date" name="startdate" required>
+              </div>
+              <div class="form-group">
+                <label>End Date</label>
+                <input type="date" name="enddate" required>
+              </div>
+            </div>
+            <button type="submit" class="btn-submit">Insert into trips_east →</button>
+          </form>
+        </div>
+        {% if trips %}
+        <table>
+          <thead><tr><th>ID</th><th>Title</th><th>Region</th><th>Start</th><th>End</th></tr></thead>
+          <tbody>
+          {% for t in trips %}
+          <tr>
+            <td><code>{{ t.tripid }}</code></td>
+            <td>{{ t.title }}</td>
+            <td><span class="badge badge-east">{{ t.region }}</span></td>
+            <td>{{ t.startdate }}</td>
+            <td>{{ t.enddate }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty">No East trips yet. Add one above.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Bookings -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>📋 Bookings</h2>
+          <div class="sub">Mixed: bookings_east + booking_amount</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="form-section">
+          <button class="form-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+            + Add Booking
+          </button>
+          <form class="add-form" method="POST" action="/east/add-booking">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Booking ID</label>
+                <input type="number" name="bookingid" placeholder="e.g. 403" required>
+              </div>
+              <div class="form-group">
+                <label>Tourist ID</label>
+                <input type="number" name="touristid" placeholder="e.g. 2" required>
+              </div>
+              <div class="form-group">
+                <label>Trip ID</label>
+                <input type="number" name="tripid" placeholder="e.g. 201" required>
+              </div>
+              <div class="form-group">
+                <label>Amount (DZD)</label>
+                <input type="number" name="amount" placeholder="e.g. 75000" required>
+              </div>
+            </div>
+            <button type="submit" class="btn-submit">Insert into bookings_east + booking_amount →</button>
+          </form>
+        </div>
+        {% if bookings %}
+        <table>
+          <thead><tr><th>Booking ID</th><th>Tourist ID</th><th>Trip ID</th></tr></thead>
+          <tbody>
+          {% for b in bookings %}
+          <tr>
+            <td><code>{{ b.bookingid }}</code></td>
+            <td>{{ b.touristid }}</td>
+            <td>{{ b.tripid }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty">No bookings yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Tourists (vertical fragmentation) -->
+  <div class="panel" style="margin-top:24px;">
+    <div class="panel-header">
+      <div>
+        <h2>👤 Tourists — Vertical Fragmentation</h2>
+        <div class="sub">tourist_basic + tourist_contact — joined by TouristID</div>
+      </div>
+    </div>
+    <div class="panel-body">
+      {% if tourists %}
+      <table>
+        <thead><tr><th>Tourist ID</th><th>Name</th><th colspan="2" style="color:var(--amber)">⚠ Private (tourist_contact — separate table)</th></tr></thead>
+        <tbody>
+        {% for t in tourists %}
+        <tr>
+          <td><code>{{ t.touristid }}</code></td>
+          <td>{{ t.name }}</td>
+          <td colspan="2" style="color:var(--muted); font-style:italic; font-size:0.8rem">
+            🔒 Nationality & Contact stored in tourist_contact (query via JOIN on TouristID)
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">No tourists found.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Cultural Events -->
+  {% if events %}
+  <div class="panel" style="margin-top:24px;">
+    <div class="panel-header">
+      <h2>🎭 East Cultural Events</h2>
+      <div class="sub">cultural_events WHERE region = 'East'</div>
+    </div>
+    <div class="panel-body">
+      <table>
+        <thead><tr><th>ID</th><th>Event</th><th>Type</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for e in events %}
+        <tr>
+          <td><code>{{ e.eventid }}</code></td>
+          <td>{{ e.name }}</td>
+          <td><span class="badge badge-event">{{ e.type }}</span></td>
+          <td>{{ e.date }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</main>
+
+</body>
+</html>

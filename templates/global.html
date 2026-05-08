@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global View — Central Office</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0f1117;
+    --surface: #1a1d27;
+    --card:    #21253a;
+    --border:  #2e3348;
+    --north:   #3b82f6;
+    --east:    #f97316;
+    --green:   #22c55e;
+    --gold:    #eab308;
+    --text:    #e2e8f0;
+    --muted:   #64748b;
+    --radius:  10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface);
+  }
+  .brand { display: flex; align-items: center; gap: 16px; }
+  .brand-dot {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--north), var(--east));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .brand h1 { font-size: 1.2rem; font-weight: 700; }
+  .brand p { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .nav-links { display: flex; gap: 8px; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); border-color: var(--muted); }
+  .nav-links a.north { color: var(--north); border-color: var(--north); }
+  .nav-links a.east  { color: var(--east);  border-color: var(--east); }
+  .nav-links a.active { background: var(--card); color: var(--text); }
+
+  .main { max-width: 1200px; margin: 0 auto; padding: 32px 40px 60px; }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 28px;
+  }
+  .hero h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+  .hero p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; max-width: 700px; }
+  .union-formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-top: 16px;
+    color: var(--green);
+    line-height: 1.8;
+  }
+  .union-formula .kw { color: var(--north); }
+  .union-formula .tbl-n { color: var(--north); }
+  .union-formula .tbl-e { color: var(--east); }
+  .union-formula .comment { color: var(--muted); }
+
+  /* ── STATS ── */
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .stat .num { font-size: 2rem; font-weight: 700; line-height: 1; }
+  .stat .lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+  .stat.north .num { color: var(--north); }
+  .stat.east  .num { color: var(--east); }
+  .stat.both  .num { background: linear-gradient(135deg, var(--north), var(--east)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 28px; }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .section-header h3 { font-size: 0.95rem; font-weight: 600; }
+  .section-header .hint { font-size: 0.75rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.8em; color: var(--green); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-north { background: rgba(59,130,246,0.15); color: var(--north); border: 1px solid rgba(59,130,246,0.3); }
+  .badge-east  { background: rgba(249,115,22,0.15);  color: var(--east);  border: 1px solid rgba(249,115,22,0.3); }
+  .badge-event { background: rgba(234,179,8,0.1);    color: var(--gold);  border: 1px solid rgba(234,179,8,0.2); }
+  .empty { text-align: center; padding: 40px; color: var(--muted); font-style: italic; }
+
+  /* ── VERTICAL FRAG ── */
+  .vertical-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ── DIAGRAM ── */
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+  .arch-diagram h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 18px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .arch-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .arch-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    text-align: center;
+  }
+  .arch-box.north { border-color: var(--north); color: var(--north); }
+  .arch-box.east  { border-color: var(--east);  color: var(--east); }
+  .arch-box.shared { border-color: var(--green); color: var(--green); }
+  .arch-box.central { border-color: var(--gold); color: var(--gold); background: rgba(234,179,8,0.05); }
+  .arch-box small { display: block; font-size: 9px; opacity: 0.6; margin-top: 2px; }
+  .arch-arrow { color: var(--muted); font-size: 18px; }
+  .arch-op { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-dot">🌍</div>
+    <div>
+      <h1>Central Office — Global View</h1>
+      <p>Distributed DB Demo · Supabase + Flask · Batna 2 University</p>
+    </div>
+  </div>
+  <nav class="nav-links">
+    <a href="/north" class="north">🏛 North Agency</a>
+    <a href="/east" class="east">🏔 East Agency</a>
+    <a href="/global" class="active">🌍 Global</a>
+  </nav>
+</header>
+
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h2>Global View — Reconstructed from All Fragments</h2>
+    <p>
+      This page simulates the <strong>central office in Algiers</strong> querying across all regional databases.
+      North Agency and East Agency each store only their regional data — this view merges them all,
+      exactly as the lab's <code>All_Trips</code> global view did in Oracle.
+    </p>
+    <div class="union-formula">
+      <span class="comment">-- Oracle equivalent (from lab):</span><br>
+      <span class="kw">CREATE VIEW</span> All_Trips <span class="kw">AS</span><br>
+      &nbsp;&nbsp;<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl-n">trips_north</span> &nbsp;<span class="comment">-- North Agency DB</span><br>
+      &nbsp;&nbsp;<span class="kw">UNION</span><br>
+      &nbsp;&nbsp;<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl-e">trips_east</span>; &nbsp;&nbsp;<span class="comment">-- East Agency DB</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat north">
+      <div class="num">{{ north_count }}</div>
+      <div class="lbl">North Trips</div>
+    </div>
+    <div class="stat east">
+      <div class="num">{{ east_count }}</div>
+      <div class="lbl">East Trips</div>
+    </div>
+    <div class="stat both">
+      <div class="num">{{ all_trips|length }}</div>
+      <div class="lbl">Total (UNION)</div>
+    </div>
+    <div class="stat both">
+      <div class="num">{{ all_bookings|length }}</div>
+      <div class="lbl">All Bookings</div>
+    </div>
+    <div class="stat both">
+      <div class="num">{{ full_tourists|length }}</div>
+      <div class="lbl">Tourists</div>
+    </div>
+  </div>
+
+  <!-- Architecture -->
+  <div class="arch-diagram">
+    <h3>Fragmentation Architecture</h3>
+    <div class="arch-row">
+      <div class="arch-box north">trips_north<small>North Agency DB</small></div>
+      <div class="arch-arrow">+</div>
+      <div class="arch-box east">trips_east<small>East Agency DB</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-op">UNION</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box central">All_Trips (this page)<small>Global View</small></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-box shared">tourist_basic<small>TouristID, Name</small></div>
+      <div class="arch-arrow">JOIN on TouristID</div>
+      <div class="arch-box shared">tourist_contact<small>Nationality, Contact</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box central">Full Tourist<small>Vertical reconstruction</small></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-box north">bookings_north<small>BookingID, TripID…</small></div>
+      <div class="arch-arrow">+</div>
+      <div class="arch-box east">bookings_east</div>
+      <div class="arch-arrow">JOIN</div>
+      <div class="arch-box shared">booking_amount<small>Amount (financial)</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box central">Full Booking<small>Mixed reconstruction</small></div>
+    </div>
+  </div>
+
+  <!-- All Trips (UNION) -->
+  <div class="section">
+    <div class="section-header">
+      <h3>✈️ All Trips — Horizontal Fragmentation UNION</h3>
+      <span class="hint">trips_north UNION trips_east</span>
+    </div>
+    <div class="table-wrap">
+      {% if all_trips %}
+      <table>
+        <thead><tr><th>Trip ID</th><th>Title</th><th>Region</th><th>Start Date</th><th>End Date</th><th>Source Table</th></tr></thead>
+        <tbody>
+        {% for t in all_trips %}
+        <tr>
+          <td><code>{{ t.tripid }}</code></td>
+          <td>{{ t.title or '—' }}</td>
+          <td>
+            {% if t.region == 'North' %}
+            <span class="badge badge-north">{{ t.region }}</span>
+            {% else %}
+            <span class="badge badge-east">{{ t.region }}</span>
+            {% endif %}
+          </td>
+          <td>{{ t.startdate }}</td>
+          <td>{{ t.enddate }}</td>
+          <td style="font-family:monospace; font-size:0.78rem; color:var(--muted)">
+            {% if t.region == 'North' %}trips_north{% else %}trips_east{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">No trips found in any region.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Full Tourists (vertical join) -->
+  <div class="section">
+    <div class="section-header">
+      <h3>👤 Full Tourist Profiles — Vertical Fragmentation JOIN</h3>
+      <span class="hint">tourist_basic JOIN tourist_contact ON TouristID</span>
+    </div>
+    <div class="table-wrap">
+      {% if full_tourists %}
+      <table>
+        <thead>
+          <tr>
+            <th>Tourist ID</th>
+            <th style="color:#93c5fd">Name (tourist_basic)</th>
+            <th style="color:#86efac">Nationality (tourist_contact)</th>
+            <th style="color:#86efac">Contact (tourist_contact)</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for t in full_tourists %}
+        <tr>
+          <td><code>{{ t.touristid }}</code></td>
+          <td style="color:#93c5fd">{{ t.name }}</td>
+          <td style="color:#86efac">{{ t.nationality or '—' }}</td>
+          <td style="color:#86efac"><code>{{ t.contact or '—' }}</code></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">No tourist data.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- All Bookings -->
+  <div class="section">
+    <div class="section-header">
+      <h3>📋 All Bookings — Mixed Fragmentation Reconstruction</h3>
+      <span class="hint">(bookings_north ∪ bookings_east) JOIN booking_amount</span>
+    </div>
+    <div class="table-wrap">
+      {% if all_bookings %}
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Tourist ID</th>
+            <th>Trip ID</th>
+            <th style="color:#86efac">Amount DZD (booking_amount)</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for b in all_bookings %}
+        <tr>
+          <td><code>{{ b.bookingid }}</code></td>
+          <td>{{ b.touristid }}</td>
+          <td>{{ b.tripid }}</td>
+          <td style="color:#86efac; font-weight:500">
+            {% if b.amount != 'N/A' %}{{ "{:,.0f}".format(b.amount) }}{% else %}N/A{% endif %}
+          </td>
+          <td style="font-family:monospace; font-size:0.78rem; color:var(--muted)">
+            {% if b.tripid < 200 %}bookings_north{% else %}bookings_east{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">No bookings found.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Events -->
+  <div class="section">
+    <div class="section-header">
+      <h3>🎭 All Cultural Events</h3>
+      <span class="hint">cultural_events — all regions</span>
+    </div>
+    <div class="table-wrap">
+      {% if events %}
+      <table>
+        <thead><tr><th>ID</th><th>Event Name</th><th>Region</th><th>Type</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for e in events %}
+        <tr>
+          <td><code>{{ e.eventid }}</code></td>
+          <td>{{ e.name }}</td>
+          <td>
+            {% if e.region == 'North' %}
+            <span class="badge badge-north">{{ e.region }}</span>
+            {% else %}
+            <span class="badge badge-east">{{ e.region }}</span>
+            {% endif %}
+          </td>
+          <td><span class="badge badge-event">{{ e.type }}</span></td>
+          <td>{{ e.date }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">No events found.</div>
+      {% endif %}
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>
