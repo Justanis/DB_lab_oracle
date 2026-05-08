@@ -4,20 +4,26 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
+# 1. Setup
 if os.path.exists(".env"):
     load_dotenv()
 
+app = Flask(__name__)
+
+# 2. Cleaning Function
 def clean_input(val):
     if not val: return ""
-    # Extract URL from Markdown [text](url) or clean brackets/quotes
+    # Extract URL from Markdown [text](url) if present
     if '](' in val:
         val = val.split('](')[1].split(')')[0]
+    # Remove brackets, parentheses, quotes, and whitespace
     val = re.sub(r'[\[\]\(\"\']', '', val).strip()
+    # Remove trailing slashes and redundant paths
     if val.endswith('/'): val = val[:-1]
     if "/rest/v1" in val: val = val.split("/rest/v1")[0]
     return val
 
-# Initialize once
+# 3. Clean and THEN Initialize (Must be in this order)
 raw_url = os.environ.get("SUPABASE_URL", "")
 raw_key = os.environ.get("SUPABASE_KEY", "")
 
@@ -25,67 +31,12 @@ url = clean_input(raw_url)
 key = clean_input(raw_key)
 
 if not url.startswith("http"):
-    raise ValueError(f"Invalid URL: {url}")
+    raise ValueError(f"Invalid URL detected: {url}")
 
+# Initialize the client using the CLEANED variables
 supabase: Client = create_client(url, key)
 
-app = Flask(__name__)
-
-@app.route("/north")
-def north():
-    trips = supabase.table("trips_north").select("*").execute().data or []
-    bookings = supabase.table("bookings_north").select("*").execute().data or []
-    tourists = supabase.table("tourist_basic").select("*").execute().data or []
-    events = supabase.table("cultural_events").select("*").eq("region", "North").execute().data or []
-    return render_template("north.html", trips=trips, bookings=bookings, tourists=tourists, events=events)
-
-@app.route("/north/add-trip", methods=["POST"])
-def north_add_trip():
-    data = {
-        "tripid": request.form.get("tripid"),
-        "region": "North",
-        "startdate": request.form.get("startdate"),
-        "enddate": request.form.get("enddate"),
-        "title": request.form.get("title"),
-    }
-    supabase.table("trips_north").insert(data).execute()
-    return redirect(url_for("north"))
-
-@app.route("/north/add-booking", methods=["POST"])
-def north_add_booking():
-    info = {"bookingid": request.form.get("bookingid"), "touristid": request.form.get("touristid"), "tripid": request.form.get("tripid")}
-    amount = {"bookingid": request.form.get("bookingid"), "amount": request.form.get("amount")}
-    supabase.table("bookings_north").insert(info).execute()
-    supabase.table("booking_amount").insert(amount).execute()
-    return redirect(url_for("north"))
-
-@app.route("/east")
-def east():
-    trips = supabase.table("trips_east").select("*").execute().data or []
-    bookings = supabase.table("bookings_east").select("*").execute().data or []
-    tourists = supabase.table("tourist_basic").select("*").execute().data or []
-    events = supabase.table("cultural_events").select("*").eq("region", "East").execute().data or []
-    return render_template("east.html", trips=trips, bookings=bookings, tourists=tourists, events=events)
-
-@app.route("/east/add-trip", methods=["POST"])
-def east_add_trip():
-    data = {
-        "tripid": request.form.get("tripid"),
-        "region": "East",
-        "startdate": request.form.get("startdate"),
-        "enddate": request.form.get("enddate"),
-        "title": request.form.get("title"),
-    }
-    supabase.table("trips_east").insert(data).execute()
-    return redirect(url_for("east"))
-
-@app.route("/east/add-booking", methods=["POST"])
-def east_add_booking():
-    info = {"bookingid": request.form.get("bookingid"), "touristid": request.form.get("touristid"), "tripid": request.form.get("tripid")}
-    amount = {"bookingid": request.form.get("bookingid"), "amount": request.form.get("amount")}
-    supabase.table("bookings_east").insert(info).execute()
-    supabase.table("booking_amount").insert(amount).execute()
-    return redirect(url_for("east"))
+# --- ROUTES ---
 
 @app.route("/")
 @app.route("/global")
@@ -111,6 +62,50 @@ def global_view():
     return render_template("global.html", all_trips=all_trips, all_bookings=all_bookings, 
                            full_tourists=full_tourists, events=events, 
                            north_count=len(n_trips), east_count=len(e_trips))
+
+@app.route("/north")
+def north():
+    trips = supabase.table("trips_north").select("*").execute().data or []
+    bookings = supabase.table("bookings_north").select("*").execute().data or []
+    tourists = supabase.table("tourist_basic").select("*").execute().data or []
+    events = supabase.table("cultural_events").select("*").eq("region", "North").execute().data or []
+    return render_template("north.html", trips=trips, bookings=bookings, tourists=tourists, events=events)
+
+@app.route("/north/add-trip", methods=["POST"])
+def north_add_trip():
+    raw_data = {
+        "tripid": request.form.get("tripid"),
+        "region": "North",
+        "startdate": request.form.get("startdate"),
+        "enddate": request.form.get("enddate"),
+        "title": request.form.get("title"),
+    }
+    # Filter out empty strings to allow DB defaults (like SERIAL) or handle NULLs properly
+    data = {k: v for k, v in raw_data.items() if v}
+    supabase.table("trips_north").insert(data).execute()
+    return redirect(url_for("north"))
+
+@app.route("/east")
+def east():
+    trips = supabase.table("trips_east").select("*").execute().data or []
+    bookings = supabase.table("bookings_east").select("*").execute().data or []
+    tourists = supabase.table("tourist_basic").select("*").execute().data or []
+    events = supabase.table("cultural_events").select("*").eq("region", "East").execute().data or []
+    return render_template("east.html", trips=trips, bookings=bookings, tourists=tourists, events=events)
+
+@app.route("/east/add-trip", methods=["POST"])
+def east_add_trip():
+    raw_data = {
+        "tripid": request.form.get("tripid"),
+        "region": "East",
+        "startdate": request.form.get("startdate"),
+        "enddate": request.form.get("enddate"),
+        "title": request.form.get("title"),
+    }
+    # Filter out empty strings to allow DB defaults (like SERIAL) or handle NULLs properly
+    data = {k: v for k, v in raw_data.items() if v}
+    supabase.table("trips_east").insert(data).execute()
+    return redirect(url_for("east"))
 
 @app.route("/api/all-trips")
 def api_all_trips():
