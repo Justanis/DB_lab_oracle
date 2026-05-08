@@ -12,31 +12,26 @@ app = Flask(__name__)
 
 # 2. Cleaning Function
 def clean_input(val):
-    if not val or not isinstance(val, str):
-        return ""
-    # Robust extraction: find the actual http(s) URL inside the string
-    match = re.search(r'(https?://[^\s\)\]\"\'\>]+)', val)
+    if not val or not isinstance(val, str): return ""
+    # Find the first substring that looks like a URL (handles markdown [text](url))
+    match = re.search(r'https?://[^\s\)\]\"\'\>]+', val)
     if match:
-        val = match.group(1)
-    
-    # Aggressively strip quotes, brackets, and whitespace
+        val = match.group(0)
+    # Strip common markdown/copy-paste artifacts like brackets or quotes
     val = val.strip().strip("[]()\"' ")
-    # Remove Supabase-specific API suffixes if accidentally included
+    # Remove API path suffixes if the URL was copied from the wrong settings page
     val = re.sub(r'/rest/v1/?$', '', val)
     return val
 
 # 3. Clean and THEN Initialize (Must be in this order)
-raw_url = os.environ.get("SUPABASE_URL", "")
-raw_key = os.environ.get("SUPABASE_KEY", "")
+url = clean_input(os.environ.get("SUPABASE_URL", ""))
+key = clean_input(os.environ.get("SUPABASE_KEY", ""))
 
-cleaned_url = clean_input(raw_url)
-cleaned_key = clean_input(raw_key)
-
-if not cleaned_url.startswith("http"):
-    raise ValueError(f"Invalid SUPABASE_URL. Check your Railway environment variables. Received: {raw_url}")
+if not url.startswith("http"):
+    raise ValueError(f"Invalid SUPABASE_URL: {url}. Please check your Railway environment variables.")
 
 # Initialize the client using the CLEANED variables
-supabase: Client = create_client(cleaned_url, cleaned_key)
+supabase: Client = create_client(url, key)
 
 # --- ROUTES ---
 
