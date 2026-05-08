@@ -15,14 +15,12 @@ def clean_input(val):
     if not val or not isinstance(val, str):
         return ""
     # Robust extraction: find the actual http(s) URL inside the string
-    # This handles [https://...](https://...) and similar garbage
-    match = re.search(r'(https?://[^\s\)\]]+)', val)
+    match = re.search(r'(https?://[^\s\)\]\"\'\>]+)', val)
     if match:
         val = match.group(1)
     
-    # Strip quotes, brackets, and whitespace that often come from copy-pasting
+    # Aggressively strip quotes, brackets, and whitespace
     val = val.strip().strip("[]()\"' ")
-    
     # Remove Supabase-specific API suffixes if accidentally included
     val = re.sub(r'/rest/v1/?$', '', val)
     return val
@@ -85,7 +83,13 @@ def north_add_trip():
         "title": request.form.get("title"),
     }
     # Filter out empty strings to allow DB defaults (like SERIAL) or handle NULLs properly
-    data = {k: v for k, v in raw_data.items() if v}
+    data = {}
+    for k, v in raw_data.items():
+        if v:
+            # Ensure tripid is an integer if provided
+            if k == "tripid":
+                v = int(v)
+            data[k] = v
     supabase.table("trips_north").insert(data).execute()
     return redirect(url_for("north"))
 
@@ -107,7 +111,13 @@ def east_add_trip():
         "title": request.form.get("title"),
     }
     # Filter out empty strings to allow DB defaults (like SERIAL) or handle NULLs properly
-    data = {k: v for k, v in raw_data.items() if v}
+    data = {}
+    for k, v in raw_data.items():
+        if v:
+            # Ensure tripid is an integer if provided
+            if k == "tripid":
+                v = int(v)
+            data[k] = v
     supabase.table("trips_east").insert(data).execute()
     return redirect(url_for("east"))
 
